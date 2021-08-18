@@ -16,13 +16,16 @@
 
 package com.example.android.unscramble.ui.game
 
+import android.content.Context
+import android.content.res.AssetManager
 
 const val MAX_NO_OF_WORDS = 10
 const val SCORE_INCREASE = 20
 
 // List with all the words for the Game
 val allWordsList: List<String> =
-    listOf("animal",
+    listOf(
+        "animal",
         "auto",
         "anecdote",
         "alphabet",
@@ -200,4 +203,22 @@ val allWordsList: List<String> =
         "zigzag",
         "zoology",
         "zone",
-        "zeal")
+        "zeal"
+    )
+var allSpanishWordsList: MutableList<String> = mutableListOf()
+
+fun initializeSpanishWords(context: Context) {
+
+    val assetManager: AssetManager = context.resources.assets
+    val inputStream = assetManager.open("es.txt", AssetManager.ACCESS_STREAMING)
+    inputStream.bufferedReader().forEachLine {
+        allSpanishWordsList.add(it)
+    }
+
+}
+//
+//fun readFile(inputStream: InputStream): MutableList<String> {
+//    var spanishWords: MutableList<String> = mutableListOf()
+//    inputStream.bufferedReader().forEachLine { spanishWords.add(it) }
+//    return spanishWords
+//}
