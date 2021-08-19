@@ -14,7 +14,7 @@ class GameViewModel : ViewModel() {
         get() = _currentWordCount
 
     private lateinit var _currentScrambledWord: String
-    val currentScrambleWord: String
+    val currentScrambledWord: String
         get() = _currentScrambledWord
 
     private var wordsList: MutableList<String> = mutableListOf()
@@ -22,7 +22,6 @@ class GameViewModel : ViewModel() {
 
     init{
         Log.d("GameFragment","GameViewModel created!!")
-        //initializeSpanishWords(context)
         getNextWord()
         Log.d("GameFragment","GameViewModel First word !!")
     }
@@ -44,7 +43,7 @@ class GameViewModel : ViewModel() {
         tempWord.shuffle()
         //val shuffleTempWord = tempWord
 
-        while(tempWord.toString().equals(currentWord,false)){
+        while(String(tempWord).equals(currentWord,false)){
             tempWord.shuffle()
         }
 
@@ -74,6 +73,13 @@ class GameViewModel : ViewModel() {
             return true
         }
         return false
+    }
+
+    fun reinitializeData(){
+        _score = 0
+        _currentWordCount = 0
+        wordsList.clear()
+        getNextWord()
     }
 
 }
