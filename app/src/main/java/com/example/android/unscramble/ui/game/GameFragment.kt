@@ -21,6 +21,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.TextView
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -31,14 +35,13 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 /**
  * Fragment where the game is played, contains the game logic.
  */
-class GameFragment : Fragment() {
+class GameFragment : Fragment(), AdapterView.OnItemSelectedListener {
 
 
     private val viewModel: GameViewModel by viewModels()
-
+    private var firstRun = true
     // Binding object instance with access to the views in the game_fragment.xml layout
     private lateinit var binding: GameFragmentBinding
-
     // Create a ViewModel the first time the fragment is created.
     // If the fragment is re-created, it receives the same GameViewModel instance created by the
     // first fragment
@@ -48,13 +51,8 @@ class GameFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         // Inflate the layout XML file and return a binding object instance
-        binding = DataBindingUtil.inflate(inflater, R.layout.game_fragment,container,false)
-        initializeSpanishWords(this.requireContext())
-        Log.d("GameFragment", "GameFragment created/re-created!")
-        Log.d(
-            "GameFragment", "Word: ${viewModel.currentScrambledWord} " +
-                    "Score: ${viewModel.score} WordCount: ${viewModel.currentWordCount}"
-        )
+        binding = DataBindingUtil.inflate(inflater, R.layout.game_fragment, container, false)
+        Log.d("GameFragment", "GameFragment onCreateView!")
         return binding.root
 
     }
@@ -62,19 +60,32 @@ class GameFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        Log.d("GameFragment", "GameFragment onViewCreated/re-created!")
-
+        Log.d("GameFragment", "GameFragment onViewCreated!")
+        GameViewModel.initializeSpanishWords(requireContext())
         binding.gameViewModel = viewModel
-        binding.maxNoOfWords = MAX_NO_OF_WORDS
+        binding.maxNoOfWords = GameViewModel.MAX_NO_OF_WORDS
+
+        val adapter = ArrayAdapter.createFromResource(
+            this.requireContext(),
+            R.array.language_array,
+            android.R.layout.simple_spinner_dropdown_item
+        )
+        binding.languageSpinner.adapter = adapter
+        binding.languageSpinner.onItemSelectedListener = this
 
         // Setup a click listener for the Submit and Skip buttons.
         binding.submit.setOnClickListener { onSubmitWord() }
         binding.skip.setOnClickListener { onSkipWord() }
         binding.score.text = getString(R.string.score, 0)
         binding.wordCount.text = getString(
-            R.string.word_count, 0, MAX_NO_OF_WORDS
+            R.string.word_count, 0, GameViewModel.MAX_NO_OF_WORDS
         )
         binding.lifecycleOwner = viewLifecycleOwner
+         
+        Log.d(
+            "GameFragment", "Word: ${viewModel.currentScrambledWord.value} " +
+                    "Score: ${viewModel.score.value} WordCount: ${viewModel.currentWordCount.value}"
+        )
     }
 
     /*
@@ -96,9 +107,6 @@ class GameFragment : Fragment() {
         }
     }
 
-    override fun onDetach() {
-        super.onDetach()
-    }
     /*
      * Skips the current word without changing the score.
      * Increases the word count.
@@ -155,4 +163,34 @@ class GameFragment : Fragment() {
             }
             .show()
     }
+
+    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+
+
+        when (position) {
+            0 -> changeToSpanish()
+            else -> changeToEnglish()
+        }
+
+        restartGame()
+//        if(!firstRun)
+//            restartGame()
+//        else{
+//            firstRun = false
+//        }
+    }
+
+    private fun changeToEnglish() {
+        viewModel.changeLanguage(GameViewModel.ENGLISH)
+    }
+
+    private fun changeToSpanish() {
+        viewModel.changeLanguage(GameViewModel.SPANISH)
+    }
+
+    override fun onNothingSelected(parent: AdapterView<*>?) {
+        Toast.makeText(this.requireContext(), "Nothing selected", Toast.LENGTH_SHORT).show()
+    }
 }
+
+
